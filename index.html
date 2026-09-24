@@ -1,311 +1,393 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan de forage – Ancrages</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan de forage – Ancrages</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-header {
-  background: #1f2937;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
 
-#plan {
-  overflow: auto;
-  padding: 25px 10px 60px;
-}
+    header {
+      background: #1f2937;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
 
-.ligne {
-  display: flex;
-  align-items: center;
-  margin-bottom: 45px;
-  min-width: 1100px;
-}
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
 
-.nom-ligne {
-  width: 70px;
-  font-weight: bold;
-  position: sticky;
-  left: 0;
-  background: #f4f6f8;
-  z-index: 2;
-}
+    header p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      opacity: 0.85;
+    }
 
-.points {
-  display: flex;
-  gap: 25px;
-}
+    #plan {
+      overflow: auto;
+      padding: 25px 15px 60px;
+    }
 
-.ligne:nth-child(even) .points {
-  margin-left: 20px;
-}
+    .ligne {
+      display: flex;
+      align-items: center;
+      margin-bottom: 35px;
+      min-width: max-content;
+    }
 
-.ancrage {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #2563eb;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  cursor: pointer;
-  flex-shrink: 0;
-  border: 3px solid white;
-  box-shadow: 0 1px 5px #888;
-}
+    .nom-ligne {
+      width: 75px;
+      min-width: 75px;
+      font-weight: bold;
+      font-size: 14px;
+    }
 
-.ancrage.complete {
-  background: #16a34a;
-}
+    .ancrages {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
 
-#fiche {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.55);
-  z-index: 10;
-  padding: 20px;
-}
+    .ancrages::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      height: 2px;
+      background: #9ca3af;
+      z-index: 0;
+    }
 
-.fenetre {
-  background: white;
-  max-width: 500px;
-  margin: 30px auto;
-  padding: 20px;
-  border-radius: 15px;
-  max-height: 85vh;
-  overflow: auto;
-}
+    .ancrage {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 50%;
+      border: 2px solid #1d4ed8;
+      background: #3b82f6;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      user-select: none;
+    }
 
-input, textarea, select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px;
-  margin: 5px 0 15px;
-  font-size: 16px;
-}
+    .ancrage.rempli {
+      background: #16a34a;
+      border-color: #15803d;
+    }
 
-button {
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
+    .ancrage:hover {
+      transform: scale(1.12);
+    }
 
-.sauver {
-  background: #16a34a;
-  color: white;
-}
+    .decale {
+      margin-left: 27px;
+    }
 
-.fermer {
-  background: #ddd;
-  margin-left: 8px;
-}
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 1000;
+      padding: 15px;
+    }
 
-.info {
-  text-align: center;
-  padding: 10px;
-  color: #555;
-}
-</style>
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 12px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 12px;
+      margin-bottom: 5px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .boutons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .sauver {
+      background: #16a34a;
+      color: white;
+    }
+
+    .fermer {
+      background: #d1d5db;
+    }
+
+    .supprimer {
+      background: #dc2626;
+      color: white;
+    }
+
+    .legende {
+      padding: 0 15px 20px;
+      font-size: 13px;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
-  <h2>Plan de forage</h2>
-  <div>Suivi des ancrages</div>
+  <h1>Plan de forage – Ancrages</h1>
+  <p>Clique sur un ancrage pour ouvrir sa fiche de forage</p>
 </header>
-
-<div class="info">
-  🔵 À réaliser &nbsp;&nbsp; 🟢 Fiche renseignée<br>
-  Touchez un ancrage pour ouvrir sa fiche.
-</div>
 
 <div id="plan"></div>
 
-<div id="fiche">
-  <div class="fenetre">
+<div class="legende">
+  🔵 Fiche non renseignée &nbsp;&nbsp; 🟢 Fiche renseignée
+</div>
 
-    <h2 id="titre"></h2>
+<div id="modal">
+  <div class="modal-content">
 
-    <label>Profondeur de forage (m)</label>
-    <input id="profondeur" type="number" step="0.1">
-
-    <label>Diamètre (mm)</label>
-    <input id="diametre" type="number">
-
-    <label>Inclinaison (°)</label>
-    <input id="inclinaison" type="number">
-
-    <label>Type d'ancrage</label>
-    <input id="type" type="text">
+    <h2 id="titreFiche">Fiche de forage</h2>
 
     <label>Date</label>
-    <input id="date" type="date">
+    <input type="date" id="date">
 
     <label>Foreur</label>
-    <input id="foreur" type="text">
+    <input type="text" id="foreur">
+
+    <label>Profondeur / longueur (m)</label>
+    <input type="number" step="0.1" id="profondeur">
+
+    <label>Diamètre (mm)</label>
+    <input type="number" id="diametre">
+
+    <label>Inclinaison / angle</label>
+    <input type="text" id="inclinaison">
 
     <label>Observations</label>
-    <textarea id="observations" rows="4"></textarea>
+    <textarea id="observations"></textarea>
 
-    <button class="sauver" onclick="sauver()">Enregistrer</button>
-    <button class="fermer" onclick="fermer()">Fermer</button>
+    <div class="boutons">
+      <button class="fermer" onclick="fermerFiche()">Fermer</button>
+      <button class="sauver" onclick="sauverFiche()">Enregistrer</button>
+    </div>
+
+    <div class="boutons">
+      <button class="supprimer" onclick="supprimerFiche()">
+        Effacer la fiche
+      </button>
+    </div>
 
   </div>
 </div>
 
 <script>
 
-// Nombre d'ancrages par ligne.
-// On pourra ajouter facilement les prochaines lignes plus tard.
-const lignes = [
-  26, // Ligne 0 - haut
-  25, // Ligne 1
-  26, // Ligne 2
-  27, // Ligne 3
-  27, // Ligne 4
-  27, // Ligne 5
-  27  // Ligne 6
-];
+  // NOMBRE RÉEL D'ANCRAGES PAR LIGNE
+  // Ligne 0 = EN HAUT
+  const lignes = [
+    26, // Ligne 0
+    25, // Ligne 1
+    26, // Ligne 2
+    27, // Ligne 3
+    27, // Ligne 4
+    27, // Ligne 5
+    27  // Ligne 6
+  ];
 
-let ancrageActuel = null;
+  const plan = document.getElementById("plan");
 
-const plan = document.getElementById("plan");
+  let ancrageActuel = null;
 
-lignes.forEach((nombre, numeroLigne) => {
+  function creerPlan() {
 
-  const ligne = document.createElement("div");
-  ligne.className = "ligne";
+    plan.innerHTML = "";
 
-  const nom = document.createElement("div");
-  nom.className = "nom-ligne";
-  nom.innerText = "L" + numeroLigne;
+    lignes.forEach((nombre, numeroLigne) => {
 
-  const points = document.createElement("div");
-  points.className = "points";
+      const ligne = document.createElement("div");
+      ligne.className = "ligne";
 
-  for(let i = 0; i < nombre; i++) {
+      const nom = document.createElement("div");
+      nom.className = "nom-ligne";
+      nom.textContent = "Ligne " + numeroLigne;
 
-    const point = document.createElement("div");
+      const zone = document.createElement("div");
+      zone.className = "ancrages";
 
-    point.className = "ancrage";
-    point.innerText = i;
+      // Décalage d'une ligne sur deux pour le quinconce
+      if (numeroLigne % 2 === 1) {
+        zone.classList.add("decale");
+      }
 
-    const id = "L" + numeroLigne + "-A" + i;
+      for (let i = 1; i <= nombre; i++) {
 
-    point.dataset.id = id;
+        const point = document.createElement("div");
 
-    if(localStorage.getItem(id)) {
-      point.classList.add("complete");
-    }
+        point.className = "ancrage";
+        point.textContent = i;
 
-    point.onclick = () => ouvrir(id);
+        const id = "L" + numeroLigne + "-A" + i;
 
-    points.appendChild(point);
+        point.dataset.id = id;
+
+        const fiche = localStorage.getItem(id);
+
+        if (fiche) {
+          point.classList.add("rempli");
+        }
+
+        point.onclick = function() {
+          ouvrirFiche(id);
+        };
+
+        zone.appendChild(point);
+      }
+
+      ligne.appendChild(nom);
+      ligne.appendChild(zone);
+
+      plan.appendChild(ligne);
+    });
   }
 
-  ligne.appendChild(nom);
-  ligne.appendChild(points);
+  function ouvrirFiche(id) {
 
-  plan.appendChild(ligne);
-});
+    ancrageActuel = id;
 
-function ouvrir(id) {
+    document.getElementById("titreFiche").textContent =
+      "Fiche de forage – " + id;
 
-  ancrageActuel = id;
+    const fiche =
+      JSON.parse(localStorage.getItem(id) || "{}");
 
-  document.getElementById("titre").innerText =
-    "Fiche forage – " + id;
+    document.getElementById("date").value =
+      fiche.date || "";
 
-  let donnees = {};
+    document.getElementById("foreur").value =
+      fiche.foreur || "";
 
-  try {
-    donnees =
-      JSON.parse(localStorage.getItem(id)) || {};
-  } catch(e) {}
+    document.getElementById("profondeur").value =
+      fiche.profondeur || "";
 
-  document.getElementById("profondeur").value =
-    donnees.profondeur || "";
+    document.getElementById("diametre").value =
+      fiche.diametre || "";
 
-  document.getElementById("diametre").value =
-    donnees.diametre || "";
+    document.getElementById("inclinaison").value =
+      fiche.inclinaison || "";
 
-  document.getElementById("inclinaison").value =
-    donnees.inclinaison || "";
+    document.getElementById("observations").value =
+      fiche.observations || "";
 
-  document.getElementById("type").value =
-    donnees.type || "";
+    document.getElementById("modal").style.display = "block";
+  }
 
-  document.getElementById("date").value =
-    donnees.date || "";
+  function fermerFiche() {
+    document.getElementById("modal").style.display = "none";
+  }
 
-  document.getElementById("foreur").value =
-    donnees.foreur || "";
+  function sauverFiche() {
 
-  document.getElementById("observations").value =
-    donnees.observations || "";
+    if (!ancrageActuel) return;
 
-  document.getElementById("fiche").style.display = "block";
-}
+    const fiche = {
 
-function sauver() {
+      date:
+        document.getElementById("date").value,
 
-  const donnees = {
+      foreur:
+        document.getElementById("foreur").value,
 
-    profondeur:
-      document.getElementById("profondeur").value,
+      profondeur:
+        document.getElementById("profondeur").value,
 
-    diametre:
-      document.getElementById("diametre").value,
+      diametre:
+        document.getElementById("diametre").value,
 
-    inclinaison:
-      document.getElementById("inclinaison").value,
+      inclinaison:
+        document.getElementById("inclinaison").value,
 
-    type:
-      document.getElementById("type").value,
+      observations:
+        document.getElementById("observations").value
+    };
 
-    date:
-      document.getElementById("date").value,
-
-    foreur:
-      document.getElementById("foreur").value,
-
-    observations:
-      document.getElementById("observations").value
-  };
-
-  localStorage.setItem(
-    ancrageActuel,
-    JSON.stringify(donnees)
-  );
-
-  const point =
-    document.querySelector(
-      '[data-id="' + ancrageActuel + '"]'
+    localStorage.setItem(
+      ancrageActuel,
+      JSON.stringify(fiche)
     );
 
-  point.classList.add("complete");
+    fermerFiche();
 
-  fermer();
-}
+    creerPlan();
+  }
 
-function fermer() {
-  document.getElementById("fiche").style.display = "none";
-}
+  function supprimerFiche() {
+
+    if (!ancrageActuel) return;
+
+    if (confirm("Effacer la fiche de " + ancrageActuel + " ?")) {
+
+      localStorage.removeItem(ancrageActuel);
+
+      fermerFiche();
+
+      creerPlan();
+    }
+  }
+
+  creerPlan();
 
 </script>
 
