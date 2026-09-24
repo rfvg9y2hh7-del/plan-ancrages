@@ -303,15 +303,15 @@
     });
   }
 
-  function ouvrirFiche(id) {
+  function ouvrirFiche(id) { async function ouvrirFiche(id) {
 
     ancrageActuel = id;
 
     document.getElementById("titreFiche").textContent =
       "Fiche de forage – " + id;
 
-    const fiche =
-      JSON.parse(localStorage.getItem(id) || "{}");
+    const snap = await getDoc(doc(db, "forages", id));
+const fiche = snap.exists() ? snap.data() : {};
 
     document.getElementById("date").value =
       fiche.date || "";
