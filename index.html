@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de forage – Ancrages</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+
+header {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+#plan {
+  overflow: auto;
+  padding: 25px 10px 60px;
+}
+
+.ligne {
+  display: flex;
+  align-items: center;
+  margin-bottom: 45px;
+  min-width: 1100px;
+}
+
+.nom-ligne {
+  width: 70px;
+  font-weight: bold;
+  position: sticky;
+  left: 0;
+  background: #f4f6f8;
+  z-index: 2;
+}
+
+.points {
+  display: flex;
+  gap: 25px;
+}
+
+.ligne:nth-child(even) .points {
+  margin-left: 20px;
+}
+
+.ancrage {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: 3px solid white;
+  box-shadow: 0 1px 5px #888;
+}
+
+.ancrage.complete {
+  background: #16a34a;
+}
+
+#fiche {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 10;
+  padding: 20px;
+}
+
+.fenetre {
+  background: white;
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 20px;
+  border-radius: 15px;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+input, textarea, select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 5px 0 15px;
+  font-size: 16px;
+}
+
+button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.sauver {
+  background: #16a34a;
+  color: white;
+}
+
+.fermer {
+  background: #ddd;
+  margin-left: 8px;
+}
+
+.info {
+  text-align: center;
+  padding: 10px;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Plan de forage</h2>
+  <div>Suivi des ancrages</div>
+</header>
+
+<div class="info">
+  🔵 À réaliser &nbsp;&nbsp; 🟢 Fiche renseignée<br>
+  Touchez un ancrage pour ouvrir sa fiche.
+</div>
+
+<div id="plan"></div>
+
+<div id="fiche">
+  <div class="fenetre">
+
+    <h2 id="titre"></h2>
+
+    <label>Profondeur de forage (m)</label>
+    <input id="profondeur" type="number" step="0.1">
+
+    <label>Diamètre (mm)</label>
+    <input id="diametre" type="number">
+
+    <label>Inclinaison (°)</label>
+    <input id="inclinaison" type="number">
+
+    <label>Type d'ancrage</label>
+    <input id="type" type="text">
+
+    <label>Date</label>
+    <input id="date" type="date">
+
+    <label>Foreur</label>
+    <input id="foreur" type="text">
+
+    <label>Observations</label>
+    <textarea id="observations" rows="4"></textarea>
+
+    <button class="sauver" onclick="sauver()">Enregistrer</button>
+    <button class="fermer" onclick="fermer()">Fermer</button>
+
+  </div>
+</div>
+
+<script>
+
+// Nombre d'ancrages par ligne.
+// On pourra ajouter facilement les prochaines lignes plus tard.
+const lignes = [
+  26, // Ligne 0 - haut
+  25, // Ligne 1
+  26, // Ligne 2
+  27, // Ligne 3
+  27, // Ligne 4
+  27, // Ligne 5
+  27  // Ligne 6
+];
+
+let ancrageActuel = null;
+
+const plan = document.getElementById("plan");
+
+lignes.forEach((nombre, numeroLigne) => {
+
+  const ligne = document.createElement("div");
+  ligne.className = "ligne";
+
+  const nom = document.createElement("div");
+  nom.className = "nom-ligne";
+  nom.innerText = "L" + numeroLigne;
+
+  const points = document.createElement("div");
+  points.className = "points";
+
+  for(let i = 0; i < nombre; i++) {
+
+    const point = document.createElement("div");
+
+    point.className = "ancrage";
+    point.innerText = i;
+
+    const id = "L" + numeroLigne + "-A" + i;
+
+    point.dataset.id = id;
+
+    if(localStorage.getItem(id)) {
+      point.classList.add("complete");
+    }
+
+    point.onclick = () => ouvrir(id);
+
+    points.appendChild(point);
+  }
+
+  ligne.appendChild(nom);
+  ligne.appendChild(points);
+
+  plan.appendChild(ligne);
+});
+
+function ouvrir(id) {
+
+  ancrageActuel = id;
+
+  document.getElementById("titre").innerText =
+    "Fiche forage – " + id;
+
+  let donnees = {};
+
+  try {
+    donnees =
+      JSON.parse(localStorage.getItem(id)) || {};
+  } catch(e) {}
+
+  document.getElementById("profondeur").value =
+    donnees.profondeur || "";
+
+  document.getElementById("diametre").value =
+    donnees.diametre || "";
+
+  document.getElementById("inclinaison").value =
+    donnees.inclinaison || "";
+
+  document.getElementById("type").value =
+    donnees.type || "";
+
+  document.getElementById("date").value =
+    donnees.date || "";
+
+  document.getElementById("foreur").value =
+    donnees.foreur || "";
+
+  document.getElementById("observations").value =
+    donnees.observations || "";
+
+  document.getElementById("fiche").style.display = "block";
+}
+
+function sauver() {
+
+  const donnees = {
+
+    profondeur:
+      document.getElementById("profondeur").value,
+
+    diametre:
+      document.getElementById("diametre").value,
+
+    inclinaison:
+      document.getElementById("inclinaison").value,
+
+    type:
+      document.getElementById("type").value,
+
+    date:
+      document.getElementById("date").value,
+
+    foreur:
+      document.getElementById("foreur").value,
+
+    observations:
+      document.getElementById("observations").value
+  };
+
+  localStorage.setItem(
+    ancrageActuel,
+    JSON.stringify(donnees)
+  );
+
+  const point =
+    document.querySelector(
+      '[data-id="' + ancrageActuel + '"]'
+    );
+
+  point.classList.add("complete");
+
+  fermer();
+}
+
+function fermer() {
+  document.getElementById("fiche").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>
